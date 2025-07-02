@@ -5,6 +5,9 @@ jobs:
         name: pull repo
         runs-on: ubuntu-22.04
         steps:
+            - name: checkout repo
+              uses: actions/checkout@v4
+              
             - name: Execute echo
               run: echo "hi"
             
