@@ -1,10 +1,13 @@
 name: Cowsay file
 on: push
 jobs:
-    first-job:
+    build-job:
         name: Write & Read a Cowsay file
         runs-on: ubuntu-22.04
         steps:
+            - name: echo
+              run: echo "This is build step"
+
             - name: checkout repo
               uses: actions/checkout@v4
 
@@ -16,17 +19,22 @@ jobs:
                chmod +x execute_cowsay.sh
                ./execute_cowsay.sh
             
-            # - name: Execute cosway cmd
-            #   run: cowsay -f dragon "I'm Jayesh" >> Dragon.txt
+    test-job:
+        name: Checking file existance
+        runs-on: ubuntu-22.04
+        steps:
+            - name: echo
+              run: echo "This is testing step"
             
-            # - name: Check existance of word
-            #   run: grep -i "Jayesh" Dragon.txt
-            
-            # - name: List file
-            #   run: ls -ltra
-            
-            # - name: Read file
-            #   run: cat Dragon.txt
+            - name: check file
+              run: grep -i "Dragon" Dragon.txt
+    
+    deploy-job:
+        name: Deploying step
+        runs-on: ubuntu-22.04
+        steps:
+            - name: echo
+              run: echo "Deploying..." 
             
             
 
