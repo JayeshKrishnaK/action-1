@@ -1,0 +1,15 @@
+name: First Example
+on: push
+jobs:
+    first-job:
+        name: pull repo
+        runs-on: ubuntu-22.04
+        steps:
+            - name: Execute echo
+              run: echo "hi"
+            
+            - name: List files
+              run: ls
+            
+            - name: print readme
+              run: cat README.md
