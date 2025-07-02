@@ -1,12 +1,23 @@
 name: Cowsay file
 on: push
+env:
+    WORKFLOW_VAR: WORKFLOW_VARIABLE
 jobs:
     build-job:
         name: Write & Read a Cowsay file
+        env:
+            JOB_VAR: JOB_VARIABLE
         runs-on: ubuntu-22.04
         steps:
             - name: echo
-              run: echo "This is build step"
+              env:
+                STEP_VAR: STEP_VARIABLE
+              run: echo $STEP_VAR
+
+            - name: echo workflow variable
+              run: |
+                echo $WORKFLOW_VAR
+                echo $JOB_VAR
 
             - name: checkout repo
               uses: actions/checkout@v4
