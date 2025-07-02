@@ -8,20 +8,25 @@ jobs:
             - name: checkout repo
               uses: actions/checkout@v4
 
-            - name: Install dependencies
-              run: sudo apt-get install cowsay -y
+            - name: Do all in one step
+              run: |
+                sudo apt-get install cowsay -y
+                cowsay -f dragon "I'm Jayesh" >> Dragon.txt
+                grep -i "Jayesh" Dragon.txt
+                ls -ltra
+                cat Dragon.txt
             
-            - name: Execute cosway cmd
-              run: cowsay -f dragon "I'm Jayesh" >> Dragon.txt
+            # - name: Execute cosway cmd
+            #   run: cowsay -f dragon "I'm Jayesh" >> Dragon.txt
             
-            - name: Check existance of word
-              run: grep -i "Jayesh" Dragon.txt
+            # - name: Check existance of word
+            #   run: grep -i "Jayesh" Dragon.txt
             
-            - name: List file
-              run: ls -ltra
+            # - name: List file
+            #   run: ls -ltra
             
-            - name: Read file
-              run: cat Dragon.txt
+            # - name: Read file
+            #   run: cat Dragon.txt
             
             
 
