@@ -28,6 +28,8 @@ jobs:
     test-job:
         name: Checking file existance
         runs-on: ubuntu-22.04
+        needs: 
+            - build-job
         steps:
             - name: Download files
               uses: actions/download-artifact@v4
@@ -43,12 +45,15 @@ jobs:
     deploy-job:
         name: Deploying step
         runs-on: ubuntu-22.04
+        needs: 
+            - build-job
+            - test-job
         steps:
             - name: Download files
               uses: actions/download-artifact@v4
               with:
                 name: Dragon-file
-                
+
             - name: echo
               run: echo "Deploying..." 
             
