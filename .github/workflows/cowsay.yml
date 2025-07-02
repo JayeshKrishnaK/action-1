@@ -8,13 +8,13 @@ jobs:
             - name: checkout repo
               uses: actions/checkout@v4
 
-            - name: Do all in one step
+            - name: List file
+              run: ls -ltra
+
+            - name: Execute shell script
               run: |
-                sudo apt-get install cowsay -y
-                cowsay -f dragon "I'm Jayesh" >> Dragon.txt
-                grep -i "Jayesh" Dragon.txt
-                ls -ltra
-                cat Dragon.txt
+               chmod +x execute_cowsay.sh
+               ./execute_cowsay.sh
             
             # - name: Execute cosway cmd
             #   run: cowsay -f dragon "I'm Jayesh" >> Dragon.txt
