@@ -40,7 +40,7 @@ jobs:
               run: echo "This is testing step"
             
             - name: check file
-              run: grep -i "Dragon" Dragon.txt
+              run: grep -i "Jayesh" Dragon.txt
     
     deploy-job:
         name: Deploying step
