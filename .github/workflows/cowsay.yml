@@ -1,0 +1,28 @@
+name: Cowsay file
+on: push
+jobs:
+    first-job:
+        name: Write & Read a Cowsay file
+        runs-on: ubuntu-22.04
+        steps:
+            - name: checkout repo
+              uses: actions/checkout@v4
+
+            - name: Install dependencies
+              run: sudo apt-get install cowsay -y
+            
+            - name: Execute cosway cmd
+              run: cowsay -f dragon "I'm Jayesh" >> Dragon.txt
+            
+            - name: Check existance of word
+              run: grep -i "Jayesh" Dragon.txt
+            
+            - name: List file
+              run: ls -ltra
+            
+            - name: Read file
+              run: cat Dragon.txt
+            
+            
+
+    
