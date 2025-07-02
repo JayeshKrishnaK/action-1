@@ -18,6 +18,8 @@ jobs:
               run: |
                 echo $WORKFLOW_VAR
                 echo $JOB_VAR
+                echo ${{ secrets.PASSWORD }}
+                echo ${{ vars.USERNAME }}
 
             - name: checkout repo
               uses: actions/checkout@v4
@@ -30,46 +32,46 @@ jobs:
                chmod +x execute_cowsay.sh
                ./execute_cowsay.sh
             
-            - name: Upload files
-              uses: actions/upload-artifact@v4
-              with:
-                name: Dragon-file
-                path: Dragon.txt
+            # - name: Upload files
+            #   uses: actions/upload-artifact@v4
+            #   with:
+            #     name: Dragon-file
+            #     path: Dragon.txt
             
-    test-job:
-        name: Checking file existance
-        runs-on: ubuntu-22.04
-        needs: 
-            - build-job
-        steps:
-            - name: Download files
-              uses: actions/download-artifact@v4
-              with:
-                name: Dragon-file
+    # test-job:
+    #     name: Checking file existance
+    #     runs-on: ubuntu-22.04
+    #     needs: 
+    #         - build-job
+    #     steps:
+    #         - name: Download files
+    #           uses: actions/download-artifact@v4
+    #           with:
+    #             name: Dragon-file
 
-            - name: echo
-              run: echo "This is testing step"
+    #         - name: echo
+    #           run: echo "This is testing step"
             
-            - name: check file
-              run: grep -i "Jayesh" Dragon.txt
+    #         - name: check file
+    #           run: grep -i "Jayesh" Dragon.txt
     
-    deploy-job:
-        name: Deploying step
-        runs-on: ubuntu-22.04
-        needs: 
-            - build-job
-            - test-job
-        steps:
-            - name: Download files
-              uses: actions/download-artifact@v4
-              with:
-                name: Dragon-file
+    # deploy-job:
+    #     name: Deploying step
+    #     runs-on: ubuntu-22.04
+    #     needs: 
+    #         - build-job
+    #         - test-job
+    #     steps:
+    #         - name: Download files
+    #           uses: actions/download-artifact@v4
+    #           with:
+    #             name: Dragon-file
 
-            - name: echo
-              run: echo "Deploying..." 
+    #         - name: echo
+    #           run: echo "Deploying..." 
             
-            - name: Deploy file
-              run: cat Dragon.txt
+    #         - name: Deploy file
+    #           run: cat Dragon.txt
             
             
 
