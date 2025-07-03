@@ -36,11 +36,11 @@ jobs:
                chmod +x execute_cowsay.sh
                ./execute_cowsay.sh
             
-            # - name: Upload files
-            #   uses: actions/upload-artifact@v4
-            #   with:
-            #     name: Dragon-file
-            #     path: Dragon.txt
+            - name: Upload files
+              uses: actions/upload-artifact@v4
+              with:
+                name: Dragon-file
+                path: Dragon.txt
             
     # test-job:
     #     name: Checking file existance
