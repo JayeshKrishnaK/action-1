@@ -1,9 +1,10 @@
 name: First Example
 on:
-  # push:
+  push:
   workflow_dispatch:
 jobs:
     first-job:
+        if: github.ref == 'refs/heads/main'
         name: pull repo
         runs-on: ubuntu-22.04
         steps:
