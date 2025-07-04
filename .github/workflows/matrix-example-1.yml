@@ -15,7 +15,9 @@ jobs:
                 - alpine
             exclude:
               - os: ubuntu-20.04
-                images: [hello-world,alpine]
+                images: hello-world
+              - os: ubuntu-20.04
+                images: alpine
               - os: windows-latest
                 images: alpine
             include:
