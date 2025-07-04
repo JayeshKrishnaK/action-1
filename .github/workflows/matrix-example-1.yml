@@ -14,16 +14,13 @@ jobs:
                 - hello-world
                 - alpine
             exclude:
-              - os:
-                - ubuntu-20.04
-                images:
-                - hello-world
-                - alpine
+              - os: ubuntu-20.04
+                images: hello-world
+              - os: ubuntu-20.04
+                images: alpine
             include:
-                - os:
-                  - ubuntu-22.04
-                  images:
-                  - busybox
+                - os: ubuntu-22.04
+                  images: busybox
         name: Running ${{matrix.images}} on ${{matrix.os}}
         runs-on: ${{ matrix.os }}
         steps:
