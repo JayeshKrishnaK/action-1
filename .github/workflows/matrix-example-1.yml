@@ -1,0 +1,24 @@
+name: Matrix Example
+on:
+    push:
+    workflow_dispatch:
+jobs:
+    docker-on-ubuntu:
+        name: Run docker image on Ubuntu
+        runs-on: ubuntu-latest
+        steps:
+            - name: Echo details
+              run: docker info
+            
+            - name: Run docker Hello World
+              run: docker run hello-world
+
+    docker-on-windows:
+        name: Run docker image on Ubuntu
+        runs-on: windows-latest
+        steps:
+            - name: Echo details
+              run: docker info
+            
+            - name: Run docker Hello World
+              run: docker run hello-world

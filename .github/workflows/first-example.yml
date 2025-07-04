@@ -1,5 +1,7 @@
 name: First Example
-on: push
+on:
+  push:
+  workflow_dispatch:
 jobs:
     first-job:
         name: pull repo
