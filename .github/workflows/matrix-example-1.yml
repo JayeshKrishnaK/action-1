@@ -1,6 +1,6 @@
 name: Matrix Example
 on:
-    push:
+    # push:
     workflow_dispatch:
 jobs:
     docker-run-on:
