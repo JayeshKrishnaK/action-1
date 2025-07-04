@@ -13,11 +13,11 @@ jobs:
             images:
                 - hello-world
                 - alpine
-        name: Running ${{strategy.images}} on ${{strategy.os}}
-        runs-on: ${{ strategy.os }}
+        name: Running ${{matrix.images}} on ${{matrix.os}}
+        runs-on: ${{ matrix.os }}
         steps:
             - name: Echo details
               run: docker info
             
-            - name: Run docker ${{strategy.images}}
-              run: docker run ${{strategy.images}}
+            - name: Run docker ${{matrix.images}}
+              run: docker run ${{matrix.images}}
