@@ -13,6 +13,17 @@ jobs:
             images:
                 - hello-world
                 - alpine
+            exclude:
+              - os:
+                - ubuntu-20.04
+              - images:
+                - hello-world
+                - alpine
+            include:
+                - os:
+                  - ubuntu-22.04
+                - images:
+                  - busybox
         name: Running ${{matrix.images}} on ${{matrix.os}}
         runs-on: ${{ matrix.os }}
         steps:
