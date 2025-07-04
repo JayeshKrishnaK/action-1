@@ -1,14 +1,15 @@
 name: Cowsay file
 on: 
-  # schedule:
-    # - cron: "*/1 * * * *"
-  workflow_dispatch: 
-  # push
+  # # schedule:
+  #   # - cron: "*/1 * * * *"
+  # workflow_dispatch: 
+  push
 env:
     WORKFLOW_VAR: WORKFLOW_VARIABLE
 jobs:
     build-job:
         name: Write & Read a Cowsay file
+        timeout-minutes: 0.10
         env:
             JOB_VAR: JOB_VARIABLE
         runs-on: ubuntu-22.04
