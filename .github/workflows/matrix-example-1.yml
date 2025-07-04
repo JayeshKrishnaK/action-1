@@ -23,6 +23,10 @@ jobs:
             include:
                 - os: ubuntu-22.04
                   images: busybox
+                - os: ubuntu-22.04
+                  images: alpine
+                - os: ubuntu-22.04
+                  images: hello-world
         name: Running ${{matrix.images}} on ${{matrix.os}}
         runs-on: ${{ matrix.os }}
         steps:
