@@ -13,6 +13,7 @@ jobs:
             images:
                 - hello-world
                 - alpine
+        name: Running ${{strategy.images}} on ${{strategy.os}}
         runs-on: ${{ strategy.os }}
         steps:
             - name: Echo details
