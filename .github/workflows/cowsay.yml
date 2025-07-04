@@ -9,7 +9,6 @@ env:
 jobs:
     build-job:
         name: Write & Read a Cowsay file
-        timeout-minutes: 1
         env:
             JOB_VAR: JOB_VARIABLE
         runs-on: ubuntu-22.04
@@ -62,6 +61,7 @@ jobs:
     
     deploy-job:
         name: Deploying step
+        timeout-minutes: 1
         runs-on: ubuntu-22.04
         needs: 
             - build-job
@@ -69,7 +69,7 @@ jobs:
         concurrency: 
           group: 
             production-deploy
-          cancel-in-progress: true
+          cancel-in-progress: false
         steps:
             - name: Download files
               uses: actions/download-artifact@v4
