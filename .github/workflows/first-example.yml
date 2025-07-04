@@ -1,6 +1,19 @@
 name: First Example
 on:
   push:
+    branches: 
+      - main
+      - '!feature/*'
+    paths-ignore: 
+      - README.me
+  pull_request: 
+    branches: 
+      - main
+    paths: 
+      - README.me
+    types: 
+      - opened
+      - closed
   workflow_dispatch:
 jobs:
     first-job:
