@@ -1,0 +1,770 @@
+include::{asciidoctorconfigdir}/.asciidoctorconfig[]
+= {module-name} Design Document
+:author: Assaf Barel (Algorithms Engineer)
+:module-name: IdPerson
+:version: 0.3
+
+<<<
+
+:sectnums!:
+== Revision History
+
+[options=header,cols="1,2,2,5"]
+|===
+|Version |Date |Author |Description
+
+|0.1
+|05/02/2025
+|{author}
+|Initial version
+
+|0.2
+|20/04/2025
+|Tamar Loeub-Yair
+|Update software units
+
+|{version}
+|05/06/2025
+|Samion Buchas
+|New units per new db version (1.6)
+|===
+
+== Document Information
+
+Author:: {author}
+Version:: {version}
+Assigned ASIL:: {assigned-asil}
+
+NOTE: This document is following the principles of QMS-196 Software Design Document (version {qms-196-version})
+
+<<<
+
+:sectnums:
+
+== Overview
+
+The {module-name} module represents a person’s identity in the face recognition system.
+Each IdPerson object stores multiple IdRecord objects for different head poses, as well as cropped images used for recognition and enrollment.
+
+=== Scope
+
+The module:
+
+. Defines a serializable identity representation for face recognition.
+. Manages multiple identity records per head pose.
+. Supports serialization and deserialization for storage and retrieval.
+. Provides compatibility with older serialization formats.
+
+=== Technical Requirements
+
+Serialization must maintain backward compatibility with older formats.
+
+<<<
+
+== Static View
+
+=== Class Diagram
+
+[plantuml]
+[.text-center]
+----
+@startuml
+
+interface ISerializable {
+{abstract} +serialize(oss: std::ostream&) : void
+{abstract} +deserialize(is: std::istream&) : void
+}
+
+class IdPerson {
++ reset() : void
++ isFull() : bool
++ numberOfRecords() : int32_t
++ addRecord(newRecord: IdRecord, headPoseBin: int32_t) : bool
++ addImage(data: DbCropData) : bool
++ getRecordsForHeadPose(headPoseBin: int32_t) : tuple<RecordsArray const&, int32_t>
++ getHeadPoseCompletionArray() : HeadPoseCompletionArray
++ getHeadPoseHistogram() : HeadPoseHistogram
++ setHeadPoseHistogram(histogram: id::HeadPoseHistogram const&) : void
++ getRecordsData() : PersonArray const&
++ setRecordsData(personArray: id::PersonArray const&) : void
++ getImagesData() : ImagesDataArray const&
++ getImagesNum() : int32_t
++ getId() : int32_t
++ setId(id: int32_t) : void
++ getRecognitionStage() : PersonRecognitionStage
++ setRecognitionStage(stage: PersonRecognitionStage) : void
++ serialize(oss: std::ostream&) : void
++ deserialize(is: std::istream&) : void
++ {static} getSerializationBufferSize() : int32_t
++ {static} getHeadPoseCompletionArray(hpArr: HeadPoseHistogram) : HeadPoseCompletionArray
++ {static} allHeadPosesCompleted(completionArray: HeadPoseCompletionArray) : bool
++ {static} getHeadPoseBin(headPoseToCheck: EulerAngles3F) : int32_t
+- m_personArray : id::PersonArray
+- m_recordsForHPs : id::HeadPoseHistogram
+- m_images : id::ImagesDataArray
+- m_id : int32_t
+- m_recognitionStage : PersonRecognitionStage
+}
+
+class IdPerson_v15 {
++ {static} getSerializationBufferSize() : int32_t
++ {static} getSerializationBufferSizeWoImages() : int32_t
+}
+
+class IdPerson_v14 {
++ {static} getSerializationBufferSize() : int32_t
++ {static} getSerializationBufferSizeWoImages() : int32_t
+}
+
+class IdPerson_pre_v13 {
++ {static} getSerializationBufferSize() : int32_t
++ {static} getSerializationBufferSizeWoImages() : int32_t
+}
+
+ISerializable <|.. IdPerson
+IdPerson --|> IdRecord
+IdPerson --|> DbCropData
+IdPerson --|> IdTypes
+IdPerson --|> IdServices
+IdPerson --|> PersonRecognitionStage
+IdPerson *-- IdPerson_v14
+IdPerson *-- IdPerson_pre_v13
+@enduml
+----
+
+<<<
+
+=== Software Units
+
+==== Public Units
+
+===== reset
+
+Responsibility::
+Resets all stored records and images, clearing existing data.
+
+Input Parameters::
+N/A
+
+Output Parameters::
+N/A
+
+===== isFull
+
+Responsibility::
+Checks if this person has reached the maximum number of records per head pose.
+
+Input Parameters::
+N/A
+
+Output Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|Return value|`bool`|`true` if all head poses are at max capacity|`true/false`
+|===
+
+===== numberOfRecords
+
+Responsibility::
+Returns the total number of `IdRecord` objects across all head poses.
+
+Input Parameters::
+N/A
+
+Output Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|Return value   |`int32_t`|Number of records stored in `IdPerson`|`>=0`
+|===
+
+===== addRecord
+
+Responsibility::
+Adds a new record to a specified head pose bin.
+
+Input Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|newRecord  |`IdRecord`|The new record to add|Valid `IdRecord`
+|headPoseBin|`int32_t`|Index of the head pose bi|0..(maxBins-1)
+|===
+
+Output Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|Return value|`bool`|`true` if insertion was successful (bin not full)|`true/false`
+|===
+
+===== addImage
+
+Responsibility::
+Adds a new cropped face image (`DbCropData`) to the corresponding head pose bin.
+
+Input Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|data   |`DbCropData`|The cropped face image data to add|Valid `DbCropData`
+|===
+
+Output Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|Return value   |`bool` |`true` if insertion was successful|`true/false`
+|===
+
+===== getRecordsForHeadPose
+
+Responsibility::
+Retrieves all records associated with a specific head pose bin.
+
+Input Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|headPoseBin|`int32_t`|Index of the head pose bin|Valid head pose bin
+|===
+
+Output Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|Return value|`std::tuple<RecordsArray const&, int32_t>`|Tuple containing reference to the records array and the count of valid records|N/A
+|===
+
+===== getHeadPoseCompletionArray
+
+Responsibility::
+Generates an array indicating which head poses have at least one record.
+
+Input Parameters::
+N/A
+
+Output Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|Return value   |`HeadPoseCompletionArray` |Boolean array showing completed bins  |Each index is `true`/`false`
+|===
+
+===== getHeadPoseHistogram
+
+Responsibility::
+Returns the internal histogram of how many records exist for each head pose bin.
+
+Input Parameters::
+N/A
+
+Output Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|Return value|`HeadPoseHistogram`|An array of record counts per head pose|N/A
+|===
+
+===== setHeadPoseHistogram
+
+Responsibility::
+Sets the internal histogram of how many records exist for each head pose bin.
+
+Input Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|histogram|`HeadPoseHistogram`|An array of record counts per head pose|N/A
+|===
+
+Output Parameters::
+N/A
+
+===== getRecordsData
+
+Responsibility::
+Provides direct access (read-only) to the internal array of records.
+
+Input Parameters::
+N/A
+
+Output Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|Return value   |`PersonArray const&`  |Reference to the internal `PersonArray`|N/A
+|===
+
+===== setRecordsData
+
+Responsibility::
+Sets the internal array of records.
+
+Input Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|personArray|`PersonArray const&`|Reference to the new `PersonArray`|N/A
+|===
+
+Output Parameters::
+N/A.
+
+===== getImagesData
+
+Responsibility::
+Provides direct access (read-only) to the internal images data array.
+
+Input Parameters::
+N/A
+
+Output Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|Return value   |`ImagesDataArray const&` |Reference to the array of images|N/A
+|===
+
+===== getImagesNum
+
+Responsibility::
+Calculates how many valid images are stored across all head pose bins.
+
+Input Parameters::
+N/A
+
+Output Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|Return value   |`int32_t`  |Number of valid images| >=0
+|===
+
+===== getId
+
+Responsibility::
+Retrieves the unique identifier for this `IdPerson`.
+
+Input Parameters::
+N/A
+
+Output Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|Return value   |`int32_t`  |Person ID |>= -1
+|===
+
+===== setId
+
+Responsibility::
+Sets the unique identifier for this `IdPerson`.
+
+Input Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|id   |`int32_t` |The new ID for this person |>= -1
+|===
+
+Output Parameters::
+N/A
+
+===== getRecognitionStage
+
+Responsibility::
+Retrieves the current recognition stage of this `IdPerson`.
+
+Input Parameters::
+N/A
+
+Output Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|Return value|`PersonRecognitionStage`| Recognition stage|[Unknown,Rejected,Accepted]
+|===
+
+===== setRecognitionStage
+
+Responsibility::
+Sets the recognition stage of this `IdPerson`.
+
+Input Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|stage|`PersonRecognitionStage`|The new recognition stage|[Unknown,Rejected,Accepted]
+|===
+
+Output Parameters::
+N/A
+
+===== serialize
+
+Responsibility::
+Serializes the `IdPerson` data (records, images) into a binary stream.
+
+Input Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|oss  |`std::ostream&` |Output stream for data     |Valid stream object
+|===
+
+Output Parameters::
+N/A
+
+===== deserialize
+
+Responsibility::
+Deserializes the `IdPerson` data from a binary stream.
+
+Input Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|is   |`std::istream&`|Input stream containing data  |Valid stream object
+|===
+
+Output Parameters::
+N/A
+
+===== getSerializationBufferSize
+
+Responsibility::
+Returns the required buffer size for storing `IdPerson` data in its current format.
+
+Input Parameters::
+N/A
+
+Output Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|Return value |`int32_t` |Buffer size for serialization|>=0
+|===
+
+===== getHeadPoseCompletionArray (accepting array)
+
+Responsibility::
+Check if all headpose bins contain at least one record.
+
+Input Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|hpArr   |`HeadPoseHistogram`   |Histogram of record counts per head pose|N/A
+|===
+
+Output Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|Return value |`HeadPoseCompletionArray` |Boolean array marking completed bins|Array of 5 'UINT32'
+|===
+
+===== allHeadPosesCompleted
+
+Responsibility::
+Checks if all head poses in a completion array are marked as completed.
+
+Input Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|completionArray  |`HeadPoseCompletionArray`       |Boolean array from `getHeadPoseCompletionArray`|Boolen values
+|===
+
+Output Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|Return value |`bool`|All headpose bins contain one record or more |`true`or `false`
+|===
+
+===== getHeadPoseBin
+
+Responsibility::
+Determines the head pose bin index based on the given Euler angles.
+
+Input Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|headPoseToCheck   |`EulerAngles3F`|Head pose angles (pitch, yaw, roll)|N/A
+|===
+
+Output Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|Return value |`int32_t`|Bin index|[-1,4]
+|===
+
+===== numOfRecordsForHeadPose
+
+Responsibility::
+Returns how many `IdRecord` objects exist in a specific head pose bin.
+
+Input Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|headPoseBin|`int32_t`|Head pose bin index|[0,4]
+|===
+
+Output Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|Return value |`int32_t`  |Number of records in that bin|[0,3]
+|===
+
+===== isBinEmpty
+
+Responsibility::
+Checks if the specified head pose bin is empty of `IdRecord`s.
+
+Input Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|bin |`int32_t` |The head pose bin index|[0,4]
+|===
+
+Output Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|N/A |`bool` |is bin empty|`true`or `false`
+|===
+
+===== IdPerson_v15::getSerializationBufferSize
+
+Responsibility::
+Returns the required buffer size for storing `IdPerson` data in version 1.5.
+
+Input Parameters::
+N/A
+
+Output Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|N/A |`int32_t` |Buffer size for serialization|>=0
+|===
+
+===== IdPerson_v15::getSerializationBufferSizeWoImages
+
+Responsibility::
+Returns the required buffer size for storing `IdPerson` data, without images, in version 1.5.
+
+Input Parameters::
+N/A
+
+Output Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|N/A |`int32_t` |Buffer size for serialization|>=0
+|===
+
+===== IdPerson_v14::getSerializationBufferSize
+
+Responsibility::
+Returns the required buffer size for storing `IdPerson` data in version 1.4.
+
+Input Parameters::
+N/A
+
+Output Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|Return value |`int32_t` |Buffer size for serialization|>=0
+|===
+
+===== IdPerson_v14::getSerializationBufferSizeWoImages
+
+Responsibility::
+Returns the required buffer size for storing `IdPerson` data, without images, in version 1.4.
+
+Input Parameters::
+N/A
+
+Output Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|Return value |`int32_t` |Buffer size for serialization|>=0
+|===
+
+===== IdPerson_pre_v13::getSerializationBufferSize
+
+Responsibility::
+Returns the required buffer size for storing `IdPerson` data in version 1.3 and earlier.
+
+Input Parameters::
+N/A
+
+Output Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|Return value |`int32_t` |Buffer size for serialization|>=0
+|===
+
+===== IdPerson_pre_v13::getSerializationBufferSizeWoImages
+
+Responsibility::
+Returns the required buffer size for storing `IdPerson` data, without images, in version 1.3 and earlier.
+
+Input Parameters::
+N/A
+
+Output Parameters::
+
+|===
+|Name |Type |Description |Possible Values
+
+|Return value |`int32_t` |Buffer size for serialization|>=0
+|===
+
+<<<
+
+==== Internal Units
+
+N/A
+
+<<<
+
+=== Configuration
+
+==== Internal Parameters
+
+|===
+|Name |Type |Meaning |Value
+
+|`frontalHeadPoseThs`
+|`constexpr float`
+|Defines the threshold for considering a head pose as frontal
+|`0.5`
+
+|`nrofAngleBins`
+|`constexpr int32_t`
+|Defines the number of non-frontal head pose bins
+|`4`
+|===
+
+==== Configurable Parameters
+
+N/A
+
+<<<
+
+== Dynamic View
+
+=== Construction Stage
+
+IdPerson objects are typically default-constructed.
+No special steps are taken during initialization.
+
+=== Initialization Stage
+
+N/A
+
+=== Start Stage
+
+N/A
+
+=== Stop Stage
+
+N/A
+
+=== Main Operation
+
+The main operations revolve around managing records and images for face recognition, along with serialization.
+
+*Example flow diagrams for `serialize` and `deserialize`*:
+
+. serialize flow
+
+[plantuml]
+[.text-center]
+----
+@startuml
+start
+:Write records-per-bin counts;
+:Write each IdRecord in each bin;
+:Write each DbCropData image;
+stop
+@enduml
+----
+
+. deserialize flow
+
+[plantuml]
+[.text-center]
+----
+@startuml
+start
+:Read records-per-bin counts;
+:Read IdRecords from each bin;
+:Read DbCropData images;
+:Set recognition stage to Unknown;
+stop
+@enduml
+----
+
+<<<
+
+=== Error Handling
+
+If deserialization encounters mismatched sizes, it logs or ignores the extra data.
+
+<<<
+
+=== Resource Usage
+
+Minimum overhead for storing records and images.
+CPU usage depends on how many records/images are processed.
